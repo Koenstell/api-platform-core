@@ -48,7 +48,7 @@ final class TypeBuilder implements TypeBuilderInterface, TypeBuilderEnumInterfac
     /**
      * {@inheritdoc}
      */
-    public function getResourceObjectType(?string $resourceClass, ResourceMetadataCollection $resourceMetadataCollection, Operation $operation, bool $input, bool $wrapped = false, int $depth = 0): GraphQLType
+    public function getResourceObjectType(?string $resourceClass, ResourceMetadataCollection $resourceMetadataCollection, Operation $operation, bool $input, bool $wrapped = false, int $depth = 0, bool $required = true): GraphQLType
     {
         $shortName = $operation->getShortName();
         $operationName = $operation->getName();
@@ -86,8 +86,8 @@ final class TypeBuilder implements TypeBuilderInterface, TypeBuilderEnumInterfac
 
         if ($this->typesContainer->has($shortName)) {
             $resourceObjectType = $this->typesContainer->get($shortName);
-            if (!($resourceObjectType instanceof ObjectType || $resourceObjectType instanceof NonNull)) {
-                throw new \LogicException(sprintf('Expected GraphQL type "%s" to be %s.', $shortName, implode('|', [ObjectType::class, NonNull::class])));
+            if (!($resourceObjectType instanceof ObjectType || $resourceObjectType instanceof NonNull || $resourceObjectType instanceof InputObjectType)) {
+                throw new \LogicException(sprintf('Expected GraphQL type "%s" to be %s.', $shortName, implode('|', [ObjectType::class, NonNull::class, InputObjectType::class])));
             }
 
             return $resourceObjectType;
@@ -156,7 +156,15 @@ final class TypeBuilder implements TypeBuilderInterface, TypeBuilderEnumInterfac
             'interfaces' => $wrapData ? [] : [$this->getNodeInterface()],
         ];
 
-        $resourceObjectType = $input ? GraphQLType::nonNull(new InputObjectType($configuration)) : new ObjectType($configuration);
+        if ($input) {
+            $resourceObjectType = new InputObjectType($configuration);
+            if ($required) {
+                $resourceObjectType = GraphQLType::nonNull($resourceObjectType);
+            }
+        } else {
+            $resourceObjectType = new ObjectType($configuration);
+        }
+
         $this->typesContainer->set($shortName, $resourceObjectType);
 
         return $resourceObjectType;

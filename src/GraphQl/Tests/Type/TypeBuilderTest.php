@@ -217,6 +217,30 @@ class TypeBuilderTest extends TestCase
         $wrappedType->config['fields']();
     }
 
+    public function testGetResourceObjectTypeNestedInputNullable(): void
+    {
+        $resourceMetadata = new ResourceMetadataCollection('resourceClass', []);
+        $this->typesContainerProphecy->has('customShortNameNullableNestedInput')->shouldBeCalled()->willReturn(false);
+        $this->typesContainerProphecy->set('customShortNameNullableNestedInput', Argument::type(InputObjectType::class))->shouldBeCalled();
+        $this->typesContainerProphecy->has('Node')->shouldBeCalled()->willReturn(false);
+        $this->typesContainerProphecy->set('Node', Argument::type(InterfaceType::class))->shouldBeCalled();
+
+        /** @var Operation $operation */
+        $operation = (new Mutation())->withName('custom')->withShortName('shortNameNullable')->withDescription('description nullable');
+        /** @var InputObjectType $resourceObjectType */
+        $resourceObjectType = $this->typeBuilder->getResourceObjectType('resourceClass', $resourceMetadata, $operation, true, false, 1, false);
+
+        $this->assertInstanceOf(InputObjectType::class, $resourceObjectType);
+        $this->assertSame('customShortNameNullableNestedInput', $resourceObjectType->name);
+        $this->assertSame('description nullable', $resourceObjectType->description);
+        $this->assertArrayHasKey('fields', $resourceObjectType->config);
+
+        $fieldsBuilderProphecy = $this->prophesize(FieldsBuilderEnumInterface::class);
+        $fieldsBuilderProphecy->getResourceObjectTypeFields('resourceClass', $operation, true, 1, null)->shouldBeCalled();
+        $this->fieldsBuilderLocatorProphecy->get('api_platform.graphql.fields_builder')->shouldBeCalled()->willReturn($fieldsBuilderProphecy->reveal());
+        $resourceObjectType->config['fields']();
+    }
+
     public function testGetResourceObjectTypeCustomMutationInputArgs(): void
     {
         $resourceMetadata = new ResourceMetadataCollection('resourceClass', []);

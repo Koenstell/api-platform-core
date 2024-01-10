@@ -16,8 +16,6 @@ namespace ApiPlatform\GraphQl\Type;
 use ApiPlatform\Metadata\GraphQl\Operation;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
 use GraphQL\Type\Definition\InterfaceType;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type as GraphQLType;
 use Symfony\Component\PropertyInfo\Type;
 
@@ -31,9 +29,9 @@ interface TypeBuilderEnumInterface
     /**
      * Gets the object type of the given resource.
      *
-     * @return ObjectType|NonNull the object type, possibly wrapped by NonNull
+     * @return GraphQLType the object type, possibly wrapped by NonNull
      */
-    public function getResourceObjectType(?string $resourceClass, ResourceMetadataCollection $resourceMetadataCollection, Operation $operation, bool $input, bool $wrapped = false, int $depth = 0): GraphQLType;
+    public function getResourceObjectType(?string $resourceClass, ResourceMetadataCollection $resourceMetadataCollection, Operation $operation, bool $input, bool $wrapped = false, int $depth = 0, bool $required = false): GraphQLType;
 
     /**
      * Get the interface type of a node.

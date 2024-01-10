@@ -180,7 +180,9 @@ final class TypeConverter implements TypeConverterInterface
             throw new OperationNotFoundException();
         }
 
-        return $this->typeBuilder->getResourceObjectType($resourceClass, $resourceMetadataCollection, $operation, $input, false, $depth);
+        $required = $propertyMetadata?->isRequired() ?? true;
+
+        return $this->typeBuilder->getResourceObjectType($resourceClass, $resourceMetadataCollection, $operation, $input, false, $depth, $required);
     }
 
     private function resolveAstTypeNode(TypeNode $astTypeNode, string $fromType): ?GraphQLType
